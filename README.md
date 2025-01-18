@@ -35,8 +35,8 @@ Anonymous is licensed under the [MIT License](LICENSE). You are free to use, mod
 
 ## Disclaimer
 
-- Security Disclaimer: While Anonymous is designed for secure communication, no system can guarantee 100% security. Always follow best practices and use additional measures as needed to protect sensitive information.
+- **Security Disclaimer:** While Anonymous is designed for secure communication, no system can guarantee 100% security. Always follow best practices and use additional measures as needed to protect sensitive information.
 
-- Misuse Disclaimer: We do not support or condone any illegal activities, misuse, or harmful intentions. Anonymous is intended solely for the purpose of secure, private, and transparent communication. The developers and maintainers of this software do not take responsibility for any unlawful actions conducted by users. Use the software responsibly and lawfully.
+- **Misuse Disclaimer:** We do not support or condone any illegal activities, misuse, or harmful intentions. Anonymous is intended solely for the purpose of secure, private, and transparent communication. The developers and maintainers of this software do not take responsibility for any unlawful actions conducted by users. Use the software responsibly and lawfully.
 
-- About "Anonymous": This software is named Anonymous as a statement of transparency and privacy, and is in no way affiliated with the "Anonymous" hacker group or any illegal activities associated with them. The app aims to provide privacy, security, and free communication without any form of surveillance or espionage. We support transparency and oppose spying in any form.
+- **About "Anonymous":** This software is named Anonymous as a statement of transparency and privacy, and is in no way affiliated with the "Anonymous" hacker group or any illegal activities associated with them. The app aims to provide privacy, security, and free communication without any form of surveillance or espionage. We support transparency and oppose spying in any form.
