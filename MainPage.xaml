@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Anonymous.MainPage">
+    <VerticalStackLayout
+        Padding="30,0"
+        Spacing="25"
+        BackgroundColor="{StaticResource PrimaryDark}">
+
+        <Image 
+            Source="anon.png"
+            HeightRequest="200"/>
+
+        <Label
+            Text="Anonymous"
+            Style="{StaticResource Headline}"
+            SemanticProperties.HeadingLevel="Level1" />
+
+        <Label
+            x:Name="PasswordLabel"
+            Text="Please enter your master password"
+            SemanticProperties.HeadingLevel="Level2" />
+
+        <Frame 
+            x:Name="PasswordFrame"
+            Padding="0" 
+            Grid.Column="1" 
+            HorizontalOptions="FillAndExpand" 
+            MinimumWidthRequest="290"
+            BackgroundColor="{StaticResource White}"
+            IsEnabled="False">
+            <Entry
+                x:Name="PasswordEntry"
+                Placeholder="Master password"
+                IsPassword="True"
+                Margin="10,0"
+                IsEnabled="False">
+            </Entry>
+        </Frame>
+        
+
+        <Button
+            x:Name="AuthButton"
+            Text="Authenticate" 
+            Clicked="OnAuthButtonClicked"
+            HorizontalOptions="Fill"
+            IsEnabled="False"/>
+    </VerticalStackLayout>
+
+</ContentPage>
