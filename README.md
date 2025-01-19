@@ -1,42 +1,60 @@
 # Anonymous
 
-Anonymous is a secure, open-source messenger app designed with a relentless focus on reliability and security. Its goal is to provide users with a highly secure communication platform without relying on centralized servers.
+Anonymous is a secure, open-source messenger app designed with a relentless focus on reliability and security. It provides a robust communication platform without relying on centralized servers, ensuring privacy and resilience against surveillance.
 
 ## Features
 
 ### **End-to-End Encryption**
 
-- Messages are encrypted using modern, secure algorithms.
-- No one except you and the intended recipient can read your messages.
-- End-to-end encryption ensures that only the intended recipient can decrypt the messages.
+- Utilizes modern, secure encryption algorithms to protect messages.
+- Ensures that only the intended recipient can decrypt messages.
+- Guarantees the confidentiality of communications, even if intercepted.
 
 ### **Local Message Storage**
 
-- Messages are stored locally on your device after they have been transported.
-- Messages are inaccessible without the app’s master password, adding an additional layer of protection.
+- Messages are stored locally on the user's device post-transport.
+- Secured with a master password, providing an additional layer of protection.
 
-### **No Central Servers**
+### **Decentralized Communication**
 
-- The app does not rely on any central servers for message transmission. That's already available nowadays.
-- Users can transport encrypted messages via any public or private means, such as email, file sharing services, or even USB drives, without compromising security.
+- Operates without central servers, ensuring no single point of failure.
+- Encrypted messages can be transmitted via any medium, including email, file-sharing services, or USB drives, without compromising security.
 
-### **Trustless Communication**
+### **Trustless Design**
 
-- The design assumes nothing in between the clients is trustworthy.
-- This ensures that even if the transport medium is compromised, your messages remain safe.
+- Assumes the communication medium is inherently untrustworthy.
+- Protects message integrity even if the transport method is compromised.
 
 ### **Cross-Platform Development**
 
-- Written using the .NET MAUI framework, ensuring modern, robust, and cross-platform development practices.
+- Developed with the .NET MAUI framework, ensuring compatibility and robust performance across multiple platforms.
+
+## Keystore Information
+
+The repository includes a dummy keystore for ease of local compilation:
+
+- **Keystore Pass**: `pQx7TjRc5Bs6dV38XzwKbYLfhgJ2SryC`
+- **Key Alias**: Anonymous
+- **Key Pass**: `pQx7TjRc5Bs6dV38XzwKbYLfhgJ2SryC`
+
+This keystore is for development purposes only and should not be used in production. By using it, you accept its insecure nature and assume all associated risks.
 
 ## License
 
-Anonymous is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this software, provided proper attribution is given.
+Anonymous is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute the software, provided proper attribution is given.
 
-## Disclaimer
+## Disclaimers
 
-- **Security Disclaimer:** While Anonymous is designed for secure communication, no system can guarantee 100% security. Always follow best practices and use additional measures as needed to protect sensitive information.
+### **Security Disclaimer**
 
-- **Misuse Disclaimer:** We do not support or condone any illegal activities, misuse, or harmful intentions. Anonymous is intended solely for the purpose of secure, private, and transparent communication. The developers and maintainers of this software do not take responsibility for any unlawful actions conducted by users. Use the software responsibly and lawfully.
+Anonymous is designed for secure communication, but no system can guarantee absolute security. Users should follow best practices and implement additional measures for sensitive information.
 
-- **About "Anonymous":** This software is named Anonymous as a statement of transparency and privacy, and is in no way affiliated with the "Anonymous" hacker group or any illegal activities associated with them. The app aims to provide privacy, security, and free communication without any form of surveillance or espionage. We support transparency and oppose spying in any form.
+### **Misuse Disclaimer**
+
+We do not condone illegal activities or harmful intentions. Anonymous is solely intended for secure, private, and lawful communication. Users are responsible for their actions.
+
+### **Name and Logo Disclaimer**
+
+The name "Anonymous" and the logo used in this application are inspired by the activism of the Anonymous collective, known for advocating for social justice, privacy rights, and transparency. **This app is not affiliated with any illegal activities, hacking groups, or harmful intentions**. The name and logo are intended to reflect a commitment to privacy, freedom of expression, and resistance against unjust surveillance.
+
+We oppose all forms of illegal activity and encourage responsible, lawful use of this software. The developers do not support or condone any misuse or unlawful actions.

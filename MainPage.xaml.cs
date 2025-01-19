@@ -13,13 +13,18 @@ namespace Anonymous
             InitializeFunctionality();
         }
 
+        private void ToggleUIElements(bool enabled)
+        {
+            PasswordFrame.IsEnabled = enabled;
+            PasswordEntry.IsEnabled = enabled;
+            AuthButton.IsEnabled = enabled;
+        }
+
         private async void InitializeFunctionality()
         {
             try
             {
-                PasswordFrame.IsEnabled = false;
-                PasswordEntry.IsEnabled = false;
-                AuthButton.IsEnabled = false;
+                ToggleUIElements(false);
                 await Task.Run(() =>
                 {
                     DatabaseManager.InitializeTables();
@@ -37,15 +42,18 @@ namespace Anonymous
                             accountPresent = false;
                             PasswordLabel.Text = "Please enter a new master password";
                         }
-                        PasswordEntry.IsEnabled = true;
-                        AuthButton.IsEnabled = true;
-                        PasswordFrame.IsEnabled = true;
                     });
                 });
             }
             catch (Exception exception)
             {
                 DebugManager.LogException(exception);
+                string error = DebugManager.MakeReadableLogs(exception);
+                await DisplayAlert("Error!", error, "OK");
+            }
+            finally
+            {
+                ToggleUIElements(true);
             }
         }
 
@@ -53,21 +61,36 @@ namespace Anonymous
         {
             try
             {
-                PasswordFrame.IsEnabled = false;
-                PasswordEntry.IsEnabled = false;
-                AuthButton.IsEnabled = false;
+                ToggleUIElements(false);
                 if (accountPresent)
                 {
-                    return;
+                    string? masterPassword = PasswordEntry.Text;
+
+                    if (masterPassword == null || masterPassword == "" || masterPassword.Length < 4)
+                    {
+                        await DisplayAlert("Not acceptable!", "The password you entered is not acceptable.", "OK");
+                        ToggleUIElements(true);
+                        return;
+                    }
+                    bool isPassword = false;
+                    await Task.Run(() =>
+                    {
+                        isPassword = ApplicationAuth.SetMasterPassword(masterPassword);
+                    });
+
+                    if (!isPassword)
+                    {
+                        await DisplayAlert("Unauthorized!", "The password you have entered is wrong.", "OK");
+                        ToggleUIElements(true);
+                        return;
+                    }
                 }
                 else
                 {
                     bool accepted = await DisplayAlert("Attention!", "Please note that if you lose your password, there will be NO WAY to retrieve it. Make sure to store it securely. Do you want to proceed?", "YES", "NO");
                     if (!accepted)
                     {
-                        PasswordFrame.IsEnabled = true;
-                        PasswordEntry.IsEnabled = true;
-                        AuthButton.IsEnabled = true;
+                        ToggleUIElements(true);
                         return;
                     }
 
@@ -76,18 +99,14 @@ namespace Anonymous
                     if (masterPassword == null || masterPassword == "")
                     {
                         await DisplayAlert("Not acceptable!", "Your have to enter a new master password.", "OK");
-                        PasswordFrame.IsEnabled = true;
-                        PasswordEntry.IsEnabled = true;
-                        AuthButton.IsEnabled = true;
+                        ToggleUIElements(true);
                         return;
                     }
 
                     if (masterPassword.Length < 4)
                     {
                         await DisplayAlert("Not acceptable!", "Your master password must at least be 4 characters long.", "OK");
-                        PasswordFrame.IsEnabled = true;
-                        PasswordEntry.IsEnabled = true;
-                        AuthButton.IsEnabled = true;
+                        ToggleUIElements(true);
                         return;
                     }
 
@@ -100,15 +119,12 @@ namespace Anonymous
             } catch (Exception exception)
             {
                 DebugManager.LogException(exception);
-                string error = "An error occured.\nError code: " + exception.HResult.ToString() + "\nDetails: " + exception.Message;
+                string error = DebugManager.MakeReadableLogs(exception);
                 await DisplayAlert("Error!", error, "OK");
             } finally
             {
-                PasswordFrame.IsEnabled = true;
-                PasswordEntry.IsEnabled = true;
-                AuthButton.IsEnabled = true;
+                ToggleUIElements(true);
             }
         }
     }
-
 }

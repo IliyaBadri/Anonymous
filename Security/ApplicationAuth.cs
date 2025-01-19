@@ -27,13 +27,15 @@ namespace Anonymous.Security
             return true;
         }
 
-        public static void SetMasterPassword(string newMasterPassword)
+        public static bool SetMasterPassword(string newMasterPassword)
         {
             masterPassword = newMasterPassword;
             if (!IsMasterPasswordValid())
             {
                 masterPassword = null;
+                return false;
             }
+            return true;
         }
 
         public static AccountDataManager.DefinedAccount? GetAccount()

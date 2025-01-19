@@ -27,5 +27,17 @@
             Console.WriteLine(report);
         
         }
+
+        public static string MakeReadableLogs(Exception exception)
+        {
+            if (exception == null)
+            {
+                return "";
+            }
+            else
+            {
+                return "An error occured.\nError code: " + exception.HResult.ToString() + "\nDetails: " + exception.Message;
+            }
+        }
     }
 }
