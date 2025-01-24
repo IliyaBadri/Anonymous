@@ -12,7 +12,8 @@
             HeightRequest="200"/>
 
         <Label
-            Text="Anonymous"
+            x:Name="TitleLabel"
+            Text="Welcome!"
             Style="{StaticResource Headline}"
             SemanticProperties.HeadingLevel="Level1" />
 

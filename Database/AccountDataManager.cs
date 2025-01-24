@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Text;
 using Anonymous.Cryptography;
 using SQLite;
 namespace Anonymous.Database
@@ -32,12 +33,13 @@ namespace Anonymous.Database
 
         private static string GetNewUID()
         {
-            byte[] randomNumbers = new byte[16];
+            byte[] randomNumbers = new byte[4];
             RandomNumberGenerator.Fill(randomNumbers);
 
             Guid guid = Guid.NewGuid();
 
-            string UID = "A-" + guid.ToString() + "-" + randomNumbers.ToString();
+            string UID = "A-" + guid.ToString() + "-" + ((uint)BitConverter.ToInt32(randomNumbers, 0)).ToString();
+
             return UID;
         }
 

@@ -1,4 +1,5 @@
-﻿using Anonymous.Database;
+﻿using System.Security.Principal;
+using Anonymous.Database;
 using Anonymous.Debug;
 using Anonymous.Security;
 
@@ -28,18 +29,20 @@ namespace Anonymous
                 await Task.Run(() =>
                 {
                     DatabaseManager.InitializeTables();
-                    bool isAccountPresent = AccountDataManager.GetEncryptedAccount() != null;
+                    bool isAccountPresent = (AccountDataManager.GetEncryptedAccount() != null);
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
                         if (isAccountPresent)
                         {
                             accountPresent = true;
+                            TitleLabel.Text = "Welcome back!";
                             PasswordLabel.Text = "Please enter your master password";
 
                         }
                         else
                         {
                             accountPresent = false;
+                            TitleLabel.Text = "Welcome!";
                             PasswordLabel.Text = "Please enter a new master password";
                         }
                     });
@@ -81,6 +84,18 @@ namespace Anonymous
                     if (!isPassword)
                     {
                         await DisplayAlert("Unauthorized!", "The password you have entered is wrong.", "OK");
+                        ToggleUIElements(true);
+                        return;
+                    }
+
+                    AccountDataManager.DefinedAccount? account = null;
+                    await Task.Run(() => {
+                        account = ApplicationAuth.GetAccount();
+                    });
+
+                    if (account == null)
+                    {
+                        await DisplayAlert("Error!", "Unexpected error.", "OK");
                         ToggleUIElements(true);
                         return;
                     }
