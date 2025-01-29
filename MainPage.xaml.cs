@@ -1,17 +1,41 @@
 ﻿using System.Security.Principal;
 using Anonymous.Database;
 using Anonymous.Debug;
-using Anonymous.Security;
+using Anonymous.Global;
+using Anonymous.State;
 
 namespace Anonymous
 {
     public partial class MainPage : ContentPage
     {
-        private bool accountPresent = false;
         public MainPage()
         {
             InitializeComponent();
             InitializeFunctionality();
+            ApplicationState.StateUpdated += UpdateState;
+        }
+
+        private void UpdateState(object? sender, EventArgs eventArgs)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ApplicationState.StateInfo state = ApplicationState.GetState();
+
+                if (state.Percentage == 100)
+                {
+                    StateLabel.Text = "Halt";
+                    return;
+                }
+
+                string stateText = "(" + state.Percentage.ToString() + "%) " + state.MainTask;
+
+                if (state.ProcessesLeft > 1)
+                {
+                    stateText += " (And " + (state.ProcessesLeft - 1).ToString() + " more)";
+                }
+
+                StateLabel.Text = stateText;
+            });
         }
 
         private void ToggleUIElements(bool enabled)
@@ -26,27 +50,24 @@ namespace Anonymous
             try
             {
                 ToggleUIElements(false);
+                AccountDataManager.EncryptedAccount? encryptedAccount = null;
                 await Task.Run(() =>
                 {
                     DatabaseManager.InitializeTables();
-                    bool isAccountPresent = (AccountDataManager.GetEncryptedAccount() != null);
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        if (isAccountPresent)
-                        {
-                            accountPresent = true;
-                            TitleLabel.Text = "Welcome back!";
-                            PasswordLabel.Text = "Please enter your master password";
-
-                        }
-                        else
-                        {
-                            accountPresent = false;
-                            TitleLabel.Text = "Welcome!";
-                            PasswordLabel.Text = "Please enter a new master password";
-                        }
-                    });
+                    encryptedAccount = AccountDataManager.GetEncryptedAccount();
                 });
+
+                if (encryptedAccount == null)
+                {
+                    TitleLabel.Text = "Welcome!";
+                    PasswordLabel.Text = "Please enter a new master password";
+                }
+                else
+                {
+                    ApplicationProperties.encryptedAccount = encryptedAccount;
+                    TitleLabel.Text = "Welcome back!";
+                    PasswordLabel.Text = "Please enter your master password";
+                }
             }
             catch (Exception exception)
             {
@@ -65,7 +86,8 @@ namespace Anonymous
             try
             {
                 ToggleUIElements(false);
-                if (accountPresent)
+                AccountDataManager.EncryptedAccount? encryptedAccount = ApplicationProperties.encryptedAccount;
+                if (encryptedAccount != null)
                 {
                     string? masterPassword = PasswordEntry.Text;
 
@@ -75,13 +97,13 @@ namespace Anonymous
                         ToggleUIElements(true);
                         return;
                     }
-                    bool isPassword = false;
+                    bool isPasswordCorrect = false;
                     await Task.Run(() =>
                     {
-                        isPassword = ApplicationAuth.SetMasterPassword(masterPassword);
+                        isPasswordCorrect = AccountDataManager.IsMasterPasswordCorrect(encryptedAccount, masterPassword);
                     });
 
-                    if (!isPassword)
+                    if (!isPasswordCorrect)
                     {
                         await DisplayAlert("Unauthorized!", "The password you have entered is wrong.", "OK");
                         ToggleUIElements(true);
@@ -90,7 +112,7 @@ namespace Anonymous
 
                     AccountDataManager.DefinedAccount? account = null;
                     await Task.Run(() => {
-                        account = ApplicationAuth.GetAccount();
+                        account = AccountDataManager.GetAccountWithoutKeyring(encryptedAccount, masterPassword);
                     });
 
                     if (account == null)
@@ -99,6 +121,8 @@ namespace Anonymous
                         ToggleUIElements(true);
                         return;
                     }
+
+                    ApplicationProperties.account = account;
                 }
                 else
                 {
@@ -125,11 +149,16 @@ namespace Anonymous
                         return;
                     }
 
+                    AccountDataManager.DefinedAccount? definedAccount = null;
                     await Task.Run(() =>
                     {
-                        AccountDataManager.MakeNewAccount(masterPassword);
-                        ApplicationAuth.SetMasterPassword(masterPassword);
+                        definedAccount = AccountDataManager.MakeNewAccount(masterPassword);
                     });
+                    if(definedAccount != null)
+                    {
+                        ApplicationProperties.account = definedAccount;
+                        ApplicationProperties.masterPassword = masterPassword;
+                    }
                 }
             } catch (Exception exception)
             {

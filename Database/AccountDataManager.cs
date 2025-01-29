@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Anonymous.Cryptography;
+using Anonymous.State;
 using SQLite;
 namespace Anonymous.Database
 {
@@ -43,18 +44,22 @@ namespace Anonymous.Database
             return UID;
         }
 
-        public static void MakeNewAccount(string masterPassword)
+        public static DefinedAccount MakeNewAccount(string masterPassword)
         {
-            if(GetEncryptedAccount() != null)
-            {
-                return;
-            }
+            int processId = ApplicationState.AddProcess("Hashing password", 0);
+            ApplicationState.CallUpdate();
             string userID = GetNewUID();
             string masterKeyHash = Argon2Manager.Hash(masterPassword);
+            ApplicationState.EditProcessPercentage(processId, 30);
+            ApplicationState.EditProcessName(processId, "Encrypting account");
+            ApplicationState.CallUpdate();
             AESManager.Keyring dummyKeyring = AESManager.GenerateKeyring();
             string databaseIV = Convert.ToBase64String(dummyKeyring.IvBytes);
             AESManager.Keyring keyring = AESManager.GetKeyringByMasterPassword(masterPassword, databaseIV);
             string encryptedUID = AESManager.Encrypt(userID, keyring);
+            ApplicationState.EditProcessPercentage(processId, 60);
+            ApplicationState.EditProcessName(processId, "Updating database");
+            ApplicationState.CallUpdate();
             Account account = new()
             {
                 UID = encryptedUID,
@@ -63,6 +68,15 @@ namespace Anonymous.Database
             };
             SQLiteConnection connection = DatabaseManager.GetConnection();
             connection.Insert(account);
+            ApplicationState.DeleteProcess(processId);
+            ApplicationState.CallUpdate();
+            DefinedAccount definedAccount = new() {
+                Id = 0,
+                UID = userID,
+                MasterKeyHash = masterKeyHash,
+                DatabaseIV = databaseIV
+            };
+            return definedAccount;
         }
 
         public static EncryptedAccount? GetEncryptedAccount()
@@ -92,21 +106,16 @@ namespace Anonymous.Database
             return Argon2Manager.VerifyHash(masterPassword, account.MasterKeyHash);
         }
 
-        public static DefinedAccount? GetAccountWithoutKeyring(string masterPassword)
+        public static DefinedAccount? GetAccountWithoutKeyring(EncryptedAccount encryptedAccount, string masterPassword)
         {
-            EncryptedAccount? account = GetEncryptedAccount();
-            if(account == null)
-            {
-                return null;
-            }
-            AESManager.Keyring keyring = AESManager.GetKeyringByMasterPassword(masterPassword, account.DatabaseIV);
-            string decryptedUID = AESManager.Decrypt(account.UID, keyring);
+            AESManager.Keyring keyring = AESManager.GetKeyringByMasterPassword(masterPassword, encryptedAccount.DatabaseIV);
+            string decryptedUID = AESManager.Decrypt(encryptedAccount.UID, keyring);
             return new DefinedAccount()
             {
-                Id = account.Id,
+                Id = encryptedAccount.Id,
                 UID = decryptedUID,
-                MasterKeyHash = account.MasterKeyHash,
-                DatabaseIV = account.DatabaseIV
+                MasterKeyHash = encryptedAccount.MasterKeyHash,
+                DatabaseIV = encryptedAccount.DatabaseIV
             };
         }
     }

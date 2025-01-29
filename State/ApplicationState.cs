@@ -3,7 +3,7 @@
     public class ApplicationState
     {
         private static int lastProcessId = 0; 
-        private static List<ProcessInfo> processList = [];
+        private static readonly List<ProcessInfo> processList = [];
 
         public class ProcessInfo
         {
@@ -31,23 +31,40 @@
 
         }
 
-        public static int AddToQueue(ProcessInfo process)
+        public static event EventHandler? StateUpdated;
+
+        public static void CallUpdate()
         {
-            ProcessInfo editedProcess = new()
-            {
-                Id = lastProcessId + 1,
-                Name = process.Name,
-                Percentage = process.Percentage
-            };
-
-            processList.Add(editedProcess);
-
-            lastProcessId += 1;
-
-            return editedProcess.Id;
+            StateUpdated?.Invoke(null, EventArgs.Empty);
         }
 
-        public static int GetPercentage(int processId)
+        public static int AddProcess(string name, int percentage)
+        {
+            int clampedPercentage = Math.Clamp(percentage, 0, 100);
+            ProcessInfo process = new()
+            {
+                Id = lastProcessId + 1,
+                Name = name,
+                Percentage = clampedPercentage
+            };
+            processList.Add(process);
+            lastProcessId++;
+            return process.Id;
+        }
+
+        public static void DeleteProcess(int processId)
+        {
+            foreach (ProcessInfo process in processList)
+            {
+                if (process.Id == processId)
+                {
+                    processList.Remove(process);
+                    break;
+                }
+            }
+        }
+
+        public static int GetProcessPercentage(int processId)
         {
             foreach (ProcessInfo process in processList)
             {
@@ -59,7 +76,7 @@
             return 0;
         }
 
-        public static void EditPercentage(int processId, int newPercentage)
+        public static void EditProcessPercentage(int processId, int newPercentage)
         {
             foreach (ProcessInfo process in processList)
             {
@@ -73,8 +90,58 @@
                     };
                     processList.Remove(process);
                     processList.Add(newProcess);
+                    break;
                 }
             }
+        }
+
+        public static void EditProcessName(int processId, string newName)
+        {
+            foreach (ProcessInfo process in processList)
+            {
+                if (process.Id == processId)
+                {
+                    ProcessInfo newProcess = new()
+                    {
+                        Id = process.Id,
+                        Name = newName,
+                        Percentage = process.Percentage
+                    };
+                    processList.Remove(process);
+                    processList.Add(newProcess);
+                    break;
+                }
+            }
+        }
+
+        public static StateInfo GetState()
+        {
+            int percentageSum = 0;
+            int completeProcesses = 0;
+            string mainTaskName = "Halt";
+            if(processList.Count > 0)
+            {
+                mainTaskName = processList[0].Name;
+            }
+            foreach (ProcessInfo process in processList)
+            {
+                percentageSum += process.Percentage;
+                if (process.IsComplete())
+                {
+                    completeProcesses++;
+                }
+            }
+            int totalPercentage = 100;
+            if (processList.Count > 0)
+            {
+                totalPercentage = (int)((double)percentageSum / (double)processList.Count);
+            }
+            StateInfo stateInfo = new() { 
+                Percentage=totalPercentage,
+                ProcessesLeft = processList.Count - completeProcesses,
+                MainTask = mainTaskName
+            };
+            return stateInfo;
         }
     }
 }
