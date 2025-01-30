@@ -46,19 +46,19 @@ namespace Anonymous.Database
 
         public static DefinedAccount MakeNewAccount(string masterPassword)
         {
-            int processId = ApplicationState.AddProcess("Hashing password", 0);
+            ApplicationState.ProcessState processState = new("Hashing password", 3);
             ApplicationState.CallUpdate();
             string userID = GetNewUID();
             string masterKeyHash = Argon2Manager.Hash(masterPassword);
-            ApplicationState.EditProcessPercentage(processId, 30);
-            ApplicationState.EditProcessName(processId, "Encrypting account");
+            processState.Increment();
+            processState.title = "Encrypting account";
             ApplicationState.CallUpdate();
             AESManager.Keyring dummyKeyring = AESManager.GenerateKeyring();
             string databaseIV = Convert.ToBase64String(dummyKeyring.IvBytes);
             AESManager.Keyring keyring = AESManager.GetKeyringByMasterPassword(masterPassword, databaseIV);
             string encryptedUID = AESManager.Encrypt(userID, keyring);
-            ApplicationState.EditProcessPercentage(processId, 60);
-            ApplicationState.EditProcessName(processId, "Updating database");
+            processState.Increment();
+            processState.title = "Updating database";
             ApplicationState.CallUpdate();
             Account account = new()
             {
@@ -68,7 +68,7 @@ namespace Anonymous.Database
             };
             SQLiteConnection connection = DatabaseManager.GetConnection();
             connection.Insert(account);
-            ApplicationState.DeleteProcess(processId);
+            processState.Destroy();
             ApplicationState.CallUpdate();
             DefinedAccount definedAccount = new() {
                 Id = 0,

@@ -27,7 +27,7 @@ namespace Anonymous
                     return;
                 }
 
-                string stateText = "(" + state.Percentage.ToString() + "%) " + state.MainTask;
+                string stateText = "(" + state.Percentage.ToString() + "%) " + state.MainState;
 
                 if (state.ProcessesLeft > 1)
                 {
@@ -98,22 +98,34 @@ namespace Anonymous
                         return;
                     }
                     bool isPasswordCorrect = false;
+                    ApplicationState.ProcessState processState = new("Checking hash", 2);
+                    ApplicationState.CallUpdate();
                     await Task.Run(() =>
                     {
                         isPasswordCorrect = AccountDataManager.IsMasterPasswordCorrect(encryptedAccount, masterPassword);
                     });
+                    processState.Increment();
+                    ApplicationState.CallUpdate();
 
                     if (!isPasswordCorrect)
                     {
                         await DisplayAlert("Unauthorized!", "The password you have entered is wrong.", "OK");
                         ToggleUIElements(true);
+                        processState.Destroy();
+                        ApplicationState.CallUpdate();
                         return;
                     }
+
+                    processState.title = "Loading data";
+                    ApplicationState.CallUpdate();
 
                     AccountDataManager.DefinedAccount? account = null;
                     await Task.Run(() => {
                         account = AccountDataManager.GetAccountWithoutKeyring(encryptedAccount, masterPassword);
                     });
+
+                    processState.Destroy();
+                    ApplicationState.CallUpdate();
 
                     if (account == null)
                     {

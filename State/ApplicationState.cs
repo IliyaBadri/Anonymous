@@ -1,19 +1,42 @@
 ﻿namespace Anonymous.State
 {
     public class ApplicationState
-    {
-        private static int lastProcessId = 0; 
-        private static readonly List<ProcessInfo> processList = [];
+    { 
+        private static readonly List<ProcessState> processStates = [];
 
-        public class ProcessInfo
+        public class ProcessState
         {
-            public required int Id { get; set; }
-            public required string Name { get; set; }
-            public required int Percentage { get; set; }
+            public string title;
+            private readonly int totalTasks;
+            private int completedTasks = 0;
+
+            public ProcessState(string title, int totalTasks)
+            {
+                this.totalTasks = totalTasks;
+                this.title = title;
+                processStates.Add(this);
+            }
+
+            public void Increment()
+            {
+                if (completedTasks + 1 <= totalTasks) {
+                    completedTasks++;
+                }
+            }
+
+            public int GetPercentage()
+            {
+                if (totalTasks > 0) {
+                    return Math.Clamp((int)(((float)(completedTasks) / (float)(totalTasks)) * 100.0f), 0, 100);
+                } else
+                {
+                    return 100;
+                }
+            }
 
             public bool IsComplete()
             {
-                if(Percentage >= 100)
+                if(GetPercentage() >= 100)
                 {
                     return true;
                 } else
@@ -21,13 +44,18 @@
                     return false;
                 }
             }
+
+            public void Destroy()
+            {
+                processStates.Remove(this);
+            }
         }
 
         public class StateInfo
         {
             public required int Percentage { get; set; }
             public required int ProcessesLeft { get; set; }
-            public required string MainTask { get; set; }
+            public required string MainState { get; set; }
 
         }
 
@@ -38,109 +66,39 @@
             StateUpdated?.Invoke(null, EventArgs.Empty);
         }
 
-        public static int AddProcess(string name, int percentage)
-        {
-            int clampedPercentage = Math.Clamp(percentage, 0, 100);
-            ProcessInfo process = new()
-            {
-                Id = lastProcessId + 1,
-                Name = name,
-                Percentage = clampedPercentage
-            };
-            processList.Add(process);
-            lastProcessId++;
-            return process.Id;
-        }
-
-        public static void DeleteProcess(int processId)
-        {
-            foreach (ProcessInfo process in processList)
-            {
-                if (process.Id == processId)
-                {
-                    processList.Remove(process);
-                    break;
-                }
-            }
-        }
-
-        public static int GetProcessPercentage(int processId)
-        {
-            foreach (ProcessInfo process in processList)
-            {
-                if (process.Id == processId)
-                {
-                    return process.Percentage;
-                }
-            }
-            return 0;
-        }
-
-        public static void EditProcessPercentage(int processId, int newPercentage)
-        {
-            foreach (ProcessInfo process in processList)
-            {
-                if (process.Id == processId)
-                {
-                    ProcessInfo newProcess = new()
-                    {
-                        Id = process.Id,
-                        Name = process.Name,
-                        Percentage = newPercentage
-                    };
-                    processList.Remove(process);
-                    processList.Add(newProcess);
-                    break;
-                }
-            }
-        }
-
-        public static void EditProcessName(int processId, string newName)
-        {
-            foreach (ProcessInfo process in processList)
-            {
-                if (process.Id == processId)
-                {
-                    ProcessInfo newProcess = new()
-                    {
-                        Id = process.Id,
-                        Name = newName,
-                        Percentage = process.Percentage
-                    };
-                    processList.Remove(process);
-                    processList.Add(newProcess);
-                    break;
-                }
-            }
-        }
-
         public static StateInfo GetState()
         {
             int percentageSum = 0;
             int completeProcesses = 0;
             string mainTaskName = "Halt";
-            if(processList.Count > 0)
+
+            if(processStates.Count > 0)
             {
-                mainTaskName = processList[0].Name;
+                mainTaskName = processStates[^1].title;
             }
-            foreach (ProcessInfo process in processList)
+
+            foreach (ProcessState processState in processStates)
             {
-                percentageSum += process.Percentage;
-                if (process.IsComplete())
+                percentageSum += processState.GetPercentage();
+
+                if (processState.IsComplete())
                 {
                     completeProcesses++;
                 }
             }
+
             int totalPercentage = 100;
-            if (processList.Count > 0)
+            if (processStates.Count > 0)
             {
-                totalPercentage = (int)((double)percentageSum / (double)processList.Count);
+                totalPercentage = (int)((float)percentageSum/(float)processStates.Count);
             }
+
             StateInfo stateInfo = new() { 
                 Percentage=totalPercentage,
-                ProcessesLeft = processList.Count - completeProcesses,
-                MainTask = mainTaskName
+                ProcessesLeft = processStates.Count - completeProcesses,
+                MainState = mainTaskName
             };
+
             return stateInfo;
         }
     }
